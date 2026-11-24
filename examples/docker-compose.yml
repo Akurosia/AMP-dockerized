@@ -1,7 +1,7 @@
 services:
   amp:
     container_name: amp
-    image: akurosia/amp-dockerized:latest
+    image: ghcr.io/akurosia/amp-dockerized:latest
     networks:
       default:
         mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.

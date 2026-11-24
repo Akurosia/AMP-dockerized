@@ -10,8 +10,8 @@
 > A lack of commits & releases does not mean this project is dead. This image is effectively an "operating system" for AMP to run on. AMP itself can be updated through its web UI at any time. Infrequently, we may need to push a new image update to support a new version of AMP.
 
 # AMP-dockerized
-This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/akurosia/amp-dockerized)
-(`akurosia/amp-dockerized:latest`) so that you can set up game servers with ease! 
+This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://github.com/Akurosia/AMP-dockerized/pkgs/container/amp-dockerized)
+(`ghcr.io/akurosia/amp-dockerized:latest`) so that you can set up game servers with ease! 
 
 In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP) to use AMP; this image does not bypass that requirement.
 
@@ -88,7 +88,7 @@ The instructions to do so are as follows:
     # Your config may look a little different -- focus on the networks section
     services:
       amp:
-        image: akurosia/amp-dockerized
+        image: ghcr.io/akurosia/amp-dockerized
         networks:
           default:
             mac_address: 02:42:AC:XX:XX:XX
@@ -115,7 +115,7 @@ For example, with Minecraft, click on the "M" section, then scroll to "Minecraft
   # Your config may look a little different; focus on the ports section
   services:
     amp:
-      image: akurosia/amp-dockerized
+      image: ghcr.io/akurosia/amp-dockerized
       ports:
         - "25565:25565/tcp"
         - "25565:25565/udp"
@@ -191,3 +191,8 @@ This fork targets Debian 13 (Trixie) slim and refreshes the base image during CI
 - Kernel security fixes require updating the Docker host as containers share its kernel; refreshing Debian userspace alone cannot patch a host kernel.
 
 See [AMP 3.0.2 release notes](https://discourse.cubecoders.com/t/amp-3-beta-neptune-v3-0-2-release-notes/43715) for beta status.
+
+
+## GitHub Container Registry
+
+Images are published to `ghcr.io/akurosia/amp-dockerized` using the repository's built-in GitHub Actions token. No Docker Hub secrets are required. Pushes to master publish `latest` and a `sha-<commit>` tag; version tags and manual production deployments also publish their corresponding tag. AMD64 and ARM64 manifests are combined automatically. Staging branches publish separate staging tags. Enable Actions for this fork in the repository Actions tab if GitHub has disabled them. After the first publish, check package visibility in GitHub Packages and set it to Public if anonymous pulls are desired.

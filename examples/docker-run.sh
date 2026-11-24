@@ -14,4 +14,4 @@ docker run -d \
   -e UID=120 \
   -e GID=124 \
   -e TZ=Etc/UTC \
-  akurosia/amp-dockerized:latest
+  ghcr.io/akurosia/amp-dockerized:latest
