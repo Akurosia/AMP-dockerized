@@ -2,7 +2,7 @@
 
 consume_progress_bars() {
   # See https://github.com/MitchTalmadge/AMP-dockerized/issues/25#issuecomment-670251321
-  grep --line-buffered -v -E '\[[-#]+\]'
+  awk '! /\[[-#]+\]/ { print; fflush() }'
 }
 
 # Returns the main instance name (ADS01 if present, else Main, else null)

@@ -23,7 +23,7 @@ jobs:
         arch: [amd64,arm64]
     env:
       # Set the DOCKERHUB_IMAGE repository variable to push elsewhere (e.g. in forks).
-      IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'mitchtalmadge/amp-dockerized' }}
+      IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'akurosia/amp-dockerized' }}
     steps:
       - name: "Checkout Git Repo"
         uses: actions/checkout@v4
@@ -53,6 +53,9 @@ jobs:
           echo "Latest ampinstmgr version: ${VERSION}"
           echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
 
+      - name: "Validate entrypoint syntax"
+        run: bash -n entrypoint/main.sh && bash -n entrypoint/routines.sh && bash -n entrypoint/utils.sh && bash -n examples/docker-run.sh
+
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
       - name: "Login to Docker Hub"
@@ -66,6 +69,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          pull: true
           platforms: linux/${{ matrix.arch }}
           provenance: false
           build-args: |

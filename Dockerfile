@@ -1,4 +1,4 @@
-FROM debian:13-slim
+FROM debian:trixie-slim
  
 ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
@@ -15,7 +15,7 @@ ENV AMP_RELEASE_STREAM=Mainline
 ENV AMP_SUPPORT_LEVEL=UNSUPPORTED
 ENV AMP_SUPPORT_TOKEN=AST0/MTAD
 ENV AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
-ENV AMP_SUPPORT_URL="https://github.com/MitchTalmadge/AMP-dockerized/"
+ENV AMP_SUPPORT_URL="https://github.com/Akurosia/AMP-dockerized/"
 ENV LD_LIBRARY_PATH="./:/opt/cubecoders/amp/:/AMP/"
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -23,6 +23,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Initialize
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tini \
     apt-transport-https \
     dirmngr \
     gnupg \
@@ -115,7 +117,6 @@ ARG WINEXVFB="\
     xvfb"
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        dpkg --add-architecture aarch64 && \
         apt-get update && \
         apt-get install -y \
         $AMPDEPS; \
@@ -229,4 +230,4 @@ RUN install -d -m 0755 /usr/share/keyrings && \
 COPY entrypoint /opt/entrypoint
 RUN chmod -R +x /opt/entrypoint
 
-ENTRYPOINT ["/opt/entrypoint/main.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/opt/entrypoint/main.sh"]
