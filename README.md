@@ -182,7 +182,7 @@ I welcome contributors! Just open an issue first, or post in one of the contibut
 
 ## Container maintenance and AMP 3 status
 
-This fork targets Debian 13 (Trixie) slim and refreshes the base image during CI builds. AMP 3 Neptune is a separate beta architecture; this image still uses AMP 2's instance manager and ADS. Do not point an experimental AMP 3 installation at your only AMP 2 data volume. Back up the entire /home/amp volume before testing a migration.
+This fork targets Debian 13 (Trixie) slim and refreshes the base image during CI builds. AMP 3 Neptune is a separate beta architecture; the default image still uses AMP 2. See [AMP 3 build and deployment](amp3/README.md) for the separate `amp3` tag. Do not point an experimental AMP 3 installation at your only AMP 2 data volume. Back up the entire /home/amp volume before testing a migration.
 
 - For activation failures with exit code 135 (upstream #275), recreate the container with `--shm-size=1g` or Compose `shm_size: 1gb`. Check `df -h /dev/shm` if the problem persists.
 - For license loss after container recreation (upstream #274), preserve a unique static MAC address and the complete AMP home volume. This is a mitigation, not a confirmed fix for all license errors.
@@ -196,3 +196,5 @@ See [AMP 3.0.2 release notes](https://discourse.cubecoders.com/t/amp-3-beta-nept
 ## GitHub Container Registry
 
 Images are published to `ghcr.io/akurosia/amp-dockerized` using the repository's built-in GitHub Actions token. No Docker Hub secrets are required. Pushes to master publish `latest` and a `sha-<commit>` tag; version tags and manual production deployments also publish their corresponding tag. AMD64 and ARM64 manifests are combined automatically. Staging branches publish separate staging tags. Enable Actions for this fork in the repository Actions tab if GitHub has disabled them. After the first publish, check package visibility in GitHub Packages and set it to Public if anonymous pulls are desired.
+
+If GHCR reports `denied`, grant this repository Write under the package's Manage Actions access settings.
