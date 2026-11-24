@@ -10,8 +10,8 @@
 > A lack of commits & releases does not mean this project is dead. This image is effectively an "operating system" for AMP to run on. AMP itself can be updated through its web UI at any time. Infrequently, we may need to push a new image update to support a new version of AMP.
 
 # AMP-dockerized
-This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
-(`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
+This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/akurosia/amp-dockerized)
+(`akurosia/amp-dockerized:latest`) so that you can set up game servers with ease! 
 
 In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP) to use AMP; this image does not bypass that requirement.
 
@@ -88,7 +88,7 @@ The instructions to do so are as follows:
     # Your config may look a little different -- focus on the networks section
     services:
       amp:
-        image: mitchtalmadge/amp-dockerized
+        image: akurosia/amp-dockerized
         networks:
           default:
             mac_address: 02:42:AC:XX:XX:XX
@@ -115,7 +115,7 @@ For example, with Minecraft, click on the "M" section, then scroll to "Minecraft
   # Your config may look a little different; focus on the ports section
   services:
     amp:
-      image: mitchtalmadge/amp-dockerized
+      image: akurosia/amp-dockerized
       ports:
         - "25565:25565/tcp"
         - "25565:25565/udp"
@@ -178,3 +178,16 @@ Please see the [advanced configuration wiki page](https://github.com/MitchTalmad
 
 I welcome contributors! Just open an issue first, or post in one of the contibution welcome / help wanted issues, so that we can discuss before you start coding. Thank you for helping!! 
 
+
+
+## Container maintenance and AMP 3 status
+
+This fork targets Debian 13 (Trixie) slim and refreshes the base image during CI builds. AMP 3 Neptune is a separate beta architecture; this image still uses AMP 2's instance manager and ADS. Do not point an experimental AMP 3 installation at your only AMP 2 data volume. Back up the entire /home/amp volume before testing a migration.
+
+- For activation failures with exit code 135 (upstream #275), recreate the container with `--shm-size=1g` or Compose `shm_size: 1gb`. Check `df -h /dev/shm` if the problem persists.
+- For license loss after container recreation (upstream #274), preserve a unique static MAC address and the complete AMP home volume. This is a mitigation, not a confirmed fix for all license errors.
+- Allow at least 120 seconds for graceful shutdown (upstream #183); larger installations may need more.
+- Startup checks ownership only on mismatched entries (upstream #45 / #266); scanning large volumes may still take time.
+- Kernel security fixes require updating the Docker host as containers share its kernel; refreshing Debian userspace alone cannot patch a host kernel.
+
+See [AMP 3.0.2 release notes](https://discourse.cubecoders.com/t/amp-3-beta-neptune-v3-0-2-release-notes/43715) for beta status.

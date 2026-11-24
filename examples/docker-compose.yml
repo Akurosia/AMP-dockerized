@@ -1,7 +1,7 @@
 services:
   amp:
     container_name: amp
-    image: mitchtalmadge/amp-dockerized:latest
+    image: akurosia/amp-dockerized:latest
     networks:
       default:
         mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
@@ -20,4 +20,6 @@ services:
       - "UID=120" # Change according to which user on the host will own the ampdata volume.
       - "GID=124"
       - "TZ=Etc/UTC" # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    shm_size: 1gb
+    stop_grace_period: 2m
     restart: unless-stopped

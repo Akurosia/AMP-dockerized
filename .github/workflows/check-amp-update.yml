@@ -202,7 +202,7 @@ jobs:
       - name: "Write Summary"
         env:
           NEXT_TAG: ${{ steps.next_tag.outputs.NEXT_TAG }}
-          IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'mitchtalmadge/amp-dockerized' }}
+          IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'akurosia/amp-dockerized' }}
         run: |
           {
             echo "## AMP Update Released"

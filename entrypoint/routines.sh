@@ -48,7 +48,7 @@ check_data_volume() {
 
 check_file_permissions() {
   echo "Checking file permissions..."
-  chown -R ${APP_USER}:${APP_GROUP} /home/amp
+  find /home/amp -xdev \( ! -uid "$(id -u "$APP_USER")" -o ! -gid "$GID" \) -exec chown -h "${APP_USER}:${APP_GROUP}" {} +
 }
 
 configure_main_instance() {
@@ -137,14 +137,14 @@ handle_error() {
   if [ ! -z "${error_message}" ]; then
     echo "Error message: ${error_message}"
   fi
-  echo "Please direct any questions or concerns to https://github.com/MitchTalmadge/AMP-dockerized/issues"
+  echo "Please direct any questions or concerns to https://github.com/Akurosia/AMP-dockerized/issues"
   exit 1
 }
 
 monitor_amp() {
   # Periodically process pending tasks (e.g. upgrade, reboots, ...)
   while true; do
-    run_amp_command_silently "ProcessPendingTasks"
+    run_amp_command_silently "ProcessPendingTasks" || echo "Warning: processing pending tasks failed; retrying in 60 seconds." >&2
     sleep 60 # Check for pending tasks every 60 seconds to reduce CPU usage
   done
 }
@@ -160,7 +160,12 @@ run_startup_script() {
 }
 
 shutdown() {
+  trap "" INT TERM HUP QUIT
   echo "Shutting down... (Signal ${1})"
+  if [ -n "${MONITOR_PID:-}" ]; then
+    kill "$MONITOR_PID" 2>/dev/null || true
+    wait "$MONITOR_PID" 2>/dev/null || true
+  fi
   if [ -n "${AMP_STARTED}" ] && [ "${AMP_STARTED}" -eq 1 ] && [ "${1}" != "KILL" ]; then
     stop_amp
   fi
