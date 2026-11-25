@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-# Build-time extraction, following the AMP 2 image's packaging model.
+# Build-time extraction of signed AMP 3 packages.
 # apt verifies the signed index and downloaded package hashes. No AMP maintainer
 # script runs here: data initialization is implemented separately in this image.
 case "$AMP3_STREAM" in mainline|preview|development) ;; *) exit 1 ;; esac
@@ -14,6 +14,7 @@ install -m 0644 "$work/archive.gpg" /usr/share/keyrings/cubecoders-amp3.gpg
 printf 'Types: deb\nURIs: %s/deb\nSuites: %s\nComponents: main\nArchitectures: amd64\nSigned-By: /usr/share/keyrings/cubecoders-amp3.gpg\n' \
   "$AMP3_REPO" "$AMP3_STREAM" >/etc/apt/sources.list.d/cubecoders-amp3.sources
 apt-get update
+chmod 0755 "$work"
 cd "$work"
 apt-get download amp3 amp3-sysagent
 for package in ./*.deb; do

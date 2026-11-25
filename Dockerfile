@@ -123,7 +123,7 @@ ENV JAVA_HOME=/usr/lib/jvm/temurin-25-jdk-amd64
 
 COPY entrypoint/ /opt/entrypoint/
 ARG AMP3_PACKAGE_CACHE_BUST=manual
-# Download signed packages and extract their payloads, as the AMP 2 image does.
+# Download signed AMP 3 packages and extract their payloads.
 # Data initialization is handled by this image, not the package post-installs.
 RUN printf '%s\n' "$AMP3_PACKAGE_CACHE_BUST" && \
     bash /opt/entrypoint/install-packages.sh && \

@@ -29,7 +29,7 @@ esac
 [ -f "/usr/share/zoneinfo/$TZ" ] || fail "Timezone '$TZ' was not found in the zoneinfo database."
 
 built_stream=$(cat /usr/local/share/amp3-docker/package-stream)
-[[ "$AMP3_STREAM" = "$built_stream" ]] || fail "AMP3_STREAM is fixed when the image is built; rebuild for a different stream."
+[[ "$AMP3_STREAM" = "$built_stream" ]] || fail "AMP3_STREAM does not match this image. Select the corresponding prebuilt preview or mainline image tag."
 built_repo=$(cat /usr/local/share/amp3-docker/package-repo)
 [[ "$AMP3_REPO" = "$built_repo" ]] || fail "AMP3_REPO is fixed when the image is built; rebuild for a different repository."
 

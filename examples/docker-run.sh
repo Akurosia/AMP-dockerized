@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE=ghcr.io/akurosia/amp-dockerized:latest
+IMAGE="ghcr.io/akurosia/amp-dockerized:${AMP3_STREAM:-preview}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 DATA_DIR=${AMP3_DATA_DIR:-"$PROJECT_ROOT/amp3data"}

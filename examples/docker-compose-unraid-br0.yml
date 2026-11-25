@@ -4,7 +4,7 @@
 services:
   AMP:
     container_name: AMP
-    image: ghcr.io/akurosia/amp-dockerized:latest
+    image: ghcr.io/akurosia/amp-dockerized:${AMP3_STREAM:-preview}
     platform: linux/amd64
     cgroup: host
     tty: true
