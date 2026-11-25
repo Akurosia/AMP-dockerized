@@ -1,104 +1,80 @@
-name: "Build"
-
+name: Build and publish AMP 3
 on:
-  workflow_call:
-    inputs:
-      for_deploy:
-        required: true
-        type: boolean
-  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'entrypoint/**'
+      - Dockerfile
+      - '.dockerignore'
+      - '.github/workflows/build.yml'
   pull_request:
     paths:
+      - 'entrypoint/**'
       - Dockerfile
-      - .dockerignore
-      - entrypoint/**
-      - .github/workflows/**.yml
-
+      - '.dockerignore'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish AMP 3 image
+        type: boolean
+        default: true
+  schedule:
+    - cron: '35 5 * * *'
 permissions:
   contents: read
   packages: write
-
+concurrency:
+  group: amp3-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
-    name: "Build"
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
-    strategy:
-      matrix:
-        arch: [amd64,arm64]
-    env:
-      IMAGE: ghcr.io/akurosia/amp-dockerized
+    runs-on: ubuntu-24.04
     steps:
-      - name: "Checkout Git Repo"
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: "Get Latest ampinstmgr Version"
-        # Passed to the build as a build-arg so that the layer cache is busted
-        # whenever CubeCoders releases a new version. Without this, a fully
-        # cached build would keep shipping the previously downloaded ampinstmgr.
-        id: amp_version
+      - uses: actions/checkout@v6
+      - name: Validate scripts
         run: |
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            URL="https://cdn-repo.c7rs.com/aarch64/debian/Packages"
-          else
-            URL="https://cdn-repo.c7rs.com/debian/Packages"
-          fi
-          VERSION=$(curl -fsSL "${URL}" | awk '
-            /^Package: ampinstmgr$/ { found=1; next }
-            /^Package:/ { found=0 }
-            found && /^Version:/ { print $2 }
-          ' | sort -V | tail -n 1)
-          if [[ -z "${VERSION}" ]]; then
-            echo "::error::Could not determine the latest ampinstmgr version from the CubeCoders repository."
-            exit 1
-          fi
-          echo "Latest ampinstmgr version: ${VERSION}"
-          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
-
-      - name: "Validate entrypoint syntax"
-        run: bash -n entrypoint/main.sh && bash -n entrypoint/routines.sh && bash -n entrypoint/utils.sh && bash -n examples/docker-run.sh
-
-      - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v4
-      - name: "Login to GitHub Container Registry"
-        if: ${{ inputs.for_deploy == true }}
+          for script in entrypoint/*.sh examples/*.sh; do bash -n "$script"; done
+          python3 -m py_compile entrypoint/*.py
+      - uses: docker/setup-buildx-action@v4
+      - name: Build AMP 3
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          pull: true
+          load: true
+          tags: amp3-local:test
+          build-args: |
+            AMP3_PACKAGE_CACHE_BUST=${{ github.run_id }}
+          cache-from: type=gha,scope=amp3
+          cache-to: type=gha,scope=amp3,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+      - name: Verify runtime files
+        run: |
+          docker run --rm --entrypoint /bin/bash amp3-local:test -ec '
+            cat /usr/local/share/amp3-docker/package-version
+            test -x /opt/cubecoders/amp3/amp3-host
+            test -x /sbin/init
+            test -d /opt/cubecoders/amp3/seed
+            for unit in amp3 amp3-bus amp3-sysagent; do
+              test -f "/usr/lib/systemd/system/$unit.service"
+            done
+          '
+      - name: Login to GHCR
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.publish)
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: "Build Docker Image"
-        id: build
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          pull: true
-          platforms: linux/${{ matrix.arch }}
-          provenance: false
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-          build-args: |
-            AMP_VERSION=${{ steps.amp_version.outputs.VERSION }}
-          cache-from: type=gha,scope=build-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
-          # When deploying, push the image by digest; the deploy workflow then
-          # stitches the per-arch digests into multi-arch manifests without the
-          # image ever being exported to a tar file.
-          outputs: ${{ inputs.for_deploy == true && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) || '' }}
-
-      - name: "Export Digest"
-        if: ${{ inputs.for_deploy == true }}
+      - name: Publish AMP 3
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.publish)
         run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
-      - name: "Upload Digest Artifact"
-        if: ${{ inputs.for_deploy == true }}
-        uses: actions/upload-artifact@v6
-        with:
-          name: digests-${{ matrix.arch }}
-          path: /tmp/digests/*
-          if-no-files-found: error
-          retention-days: 1
+          image=ghcr.io/akurosia/amp-dockerized
+          for tag in latest amp3 amp3-amd64 "amp3-${GITHUB_SHA:0:12}" "sha-${GITHUB_SHA:0:12}"; do
+            docker tag amp3-local:test "$image:$tag"
+            docker push "$image:$tag"
+          done

@@ -4,7 +4,7 @@
 services:
   AMP:
     container_name: AMP
-    image: ghcr.io/akurosia/amp-dockerized:amp3
+    image: ghcr.io/akurosia/amp-dockerized:latest
     platform: linux/amd64
     cgroup: host
     tty: true

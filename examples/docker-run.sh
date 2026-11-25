@@ -1,17 +1,30 @@
 #!/usr/bin/env bash
-set -e
-# Set AMP_MAC to a unique, persistent locally administered unicast MAC.
-: "${AMP_MAC:?Set AMP_MAC before running this script}"
+set -euo pipefail
+
+IMAGE=ghcr.io/akurosia/amp-dockerized:latest
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+DATA_DIR=${AMP3_DATA_DIR:-"$PROJECT_ROOT/amp3data"}
+
+mkdir -p "$DATA_DIR"
+docker pull --platform linux/amd64 "$IMAGE"
+
 docker run -d \
-  --name amp \
+  --name amp3 \
   --restart unless-stopped \
-  --network bridge \
-  --mac-address "$AMP_MAC" \
-  --shm-size=1g \
-  --stop-timeout=120 \
-  -p 8080:8080 \
-  -v "$(pwd)/ampdata:/home/amp/" \
-  -e UID=120 \
-  -e GID=124 \
-  -e TZ=Etc/UTC \
-  ghcr.io/akurosia/amp-dockerized:latest
+  --cgroupns host \
+  --tty \
+  --cap-add SYS_ADMIN \
+  --cap-add NET_ADMIN \
+  --security-opt apparmor=unconfined \
+  --tmpfs /run \
+  --tmpfs /run/lock \
+  --volume "$DATA_DIR:/opt/cubecoders/amp3/data" \
+  --volume /sys/fs/cgroup:/sys/fs/cgroup:rw \
+  --publish 8443:8443/tcp \
+  --env PORT=8443 \
+  --env TZ=Etc/UTC \
+  "$IMAGE"
+
+echo "AMP 3 is starting. Complete the first-run wizard at http://localhost:8443/."
+echo "Add -p HOST:CONTAINER/tcp or /udp mappings for each game server port you use."

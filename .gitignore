@@ -1,4 +1,4 @@
-.idea
-.vscode
-*.iml
-test
+ampdata/
+amp3data/
+__pycache__/
+*.pyc

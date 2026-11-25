@@ -1,4 +1,6 @@
-**
-
-!Dockerfile
-!entrypoint/**
+.git
+.github
+examples
+ampdata
+amp3data
+**/__pycache__
