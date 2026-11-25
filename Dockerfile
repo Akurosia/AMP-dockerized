@@ -7,13 +7,11 @@ ENV GID=1000
 ENV TZ=Etc/UTC
 ENV PORT=8080
 ENV USERNAME=admin
-ENV PASSWORD=password
 ENV IPBINDING=0.0.0.0
 
 ENV AMP_AUTO_UPDATE=true
 ENV AMP_RELEASE_STREAM=Mainline
 ENV AMP_SUPPORT_LEVEL=UNSUPPORTED
-ENV AMP_SUPPORT_TOKEN=AST0/MTAD
 ENV AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
 ENV AMP_SUPPORT_URL="https://github.com/Akurosia/AMP-dockerized/"
 ENV LD_LIBRARY_PATH="./:/opt/cubecoders/amp/:/AMP/"

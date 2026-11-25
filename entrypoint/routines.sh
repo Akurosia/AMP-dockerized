@@ -54,6 +54,9 @@ check_file_permissions() {
 configure_main_instance() {
   echo "Checking ADS instance existence..."
   if ! does_main_instance_exist; then
+    if [[ -z "${PASSWORD:-}" || "${PASSWORD}" == "password" ]]; then
+      handle_error "Set a non-default PASSWORD environment variable before creating the first ADS instance."
+    fi
     echo "Creating ADS instance... (This can take a while)"
     run_amp_command "QuickStart \"${USERNAME}\" \"${PASSWORD}\" \"${IPBINDING}\" \"${PORT}\"" | consume_progress_bars
     if ! does_main_instance_exist; then

@@ -13,6 +13,8 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
+# Public support identifier, not an authentication secret.
+export AMP_SUPPORT_TOKEN="${AMP_SUPPORT_TOKEN:-AST0/MTAD}"
 source /opt/entrypoint/utils.sh
 source /opt/entrypoint/routines.sh
 trap 'handle_error' ERR

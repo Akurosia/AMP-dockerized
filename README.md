@@ -153,7 +153,7 @@ Example: `TZ=America/Denver`
 | `PORT`     | The port of the Web UI for the main instance. Since you can map this to any port on the host, there's hardly a reason to change it.                     | `8080`        |
 | `IPBINDING`| Which IP address the main instance will bind to. In almost all cases you should leave this as the default, unless you are doing something advanced.     | `0.0.0.0`     |
 | `USERNAME` | The username of the admin user created on first boot.                                                                                                   | `admin`       |
-| `PASSWORD` | The password of the admin user. This value is only used when creating the new user. If you use the default value, please change it after first sign-in. | `password`    |
+| `PASSWORD` | The password of the admin user. Required for first-time setup; no default password is provided. Existing instances do not need this variable. | Required on first boot    |
 
 ### Auto-Update
 | Name              | Description                                                                                     | Default Value |
